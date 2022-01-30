@@ -1,0 +1,342 @@
+---
+- name: Install or update to latest Vanilla Minecraft Server version
+  hosts : all    
+
+  become: yes
+  become_method: sudo
+  become_user: root
+  
+  vars:
+    # This section has variables to be filled out by user to be used during execution
+    # Review Minecraft Wiki for server.properties settings:
+    # https://minecraft.fandom.com/wiki/Server.properties       
+    
+    minecraft_motd: "Ansible created Minecraft Server"
+    minecraft_gamemode: "survival"
+    minecraft_pvp: "false"
+    minecraft_difficulty: "normal"
+    minecraft_allow_flight: "true"
+    
+    # If Minecraft server will be internet facing, recommend enabling this
+    # Whitelist can be managed through whitelist.json or console in game
+    # https://minecraft.fandom.com/wiki/Commands/whitelist
+    minecraft_whitelist: "true"
+    minecraft_enforce_whitelist: "true"
+
+    # Minecraft user to OP and whitelist by username.
+    # Otherwise you will be blocked from joining the server
+    minecraft_user: ""
+
+    # Minimum and maximum amount of memory to allow Java to run Minecraft in GB
+    minecraft_java_minmem: 2
+    minecraft_java_maxmem: 10
+
+  tasks:     
+  
+  - name: Get list of services    
+    # This needs Ansible 2.9.8 or later - ensure you are updated locally or you will run into an error here:
+    # Malformed output discovered from systemd list-unit-files
+    # Reference:  https://giters.com/ansible/ansible/issues/74717 
+    service_facts:      
+  
+  - name: Stop Minecraft service if it exists
+    systemd: 
+      name: minecraft
+      state: stopped
+    when: ansible_facts.services["minecraft.service"] is defined
+   
+  - name: If APT based system, refresh packages
+    apt:
+      update_cache: yes
+    when: ansible_os_family == "Debian"
+
+
+  - name: Update and install packages
+    # Should be agnostic to package manager (apt, yum) however package names may differ based on distribution    
+    # Screen required to create and access Minecraft admin console.  Can look at switching this to tmux or rcon
+    # ACL package required to avoid this error:  "Failed to set permissions on the temporary files Ansible needs to create when becoming an unprivileged user"
+    # https://github.com/georchestra/ansible/issues/55#issuecomment-588313638
+    package:
+      name:               
+      - screen      
+      - acl       
+      state: latest
+    ignore_errors: yes
+    
+    # As of January 2022, the latest version of Java is 17.0.2.
+    # Specifying openjdk-17 but this can be updated as needed to ensure latest Java version installed
+
+  - name: If Ubuntu, add OpenJDK repository from PPA
+    # Ubuntu 20.04 needs the ppa:openjdk-r/ppa repository to be able to install OpenJDK 17
+    # https://www.linuxcapable.com/how-to-install-openjdk-17-on-ubuntu-20-04/
+    apt_repository: 
+      repo: ppa:openjdk-r/ppa
+    when: ansible_facts['distribution'] == "Ubuntu"
+
+  - name: Install OpenJDK 17 if running on APT based system (eg - Debian, Ubuntu)    
+    # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html
+    apt: 
+      name: openjdk-17-jre-headless
+      state: latest
+    when: ansible_os_family == "Debian"
+
+  - name: Install OpenJDK 17 if running on RPM based system (eg - RHEL, CentOS, Fedora)
+    yum:
+      name: java-17-openjdk-headless.x86_64
+      state: latest
+    when: ansible_facts['distribution'] == "RedHat" or ansible_facts['distribution'] == "CentOS" or ansible_facts['distribution'] == "Fedora"
+
+  - name: Download and install Amazon Coretto 17 if running on Amazon Linux 2
+    # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/yum_module.html
+    # https://docs.aws.amazon.com/corretto/latest/corretto-17-ug/Corretto-17.pdf
+    yum: 
+      name: java-17-amazon-corretto-headless.x86_64
+      state: latest
+    when: ansible_facts['distribution'] == "Amazon"
+
+  - name: Set up Minecraft group
+    group:
+      name: minecraft
+      state: present
+
+  - name: Set up Minecraft user
+    user:
+      name: minecraft        
+      shell: /bin/bash
+      groups: minecraft
+      home: /home/minecraft
+  
+  - name: Create /opt/minecraft directory and give ownership to Minecraft user
+    file:
+      path: /opt/minecraft
+      state: directory
+      mode: '0700'
+      owner: minecraft
+      group: minecraft
+  
+  - name: Attempt Download Server HTML file from Mojang
+    # Needed to modify user agent as Mojang restricts URL download otherwise
+    # https://bugs.mojang.com/browse/WEB-4753
+    # Testing failed on AWS but works locally.  Will include backup static download scenario
+    get_url: 
+      url: https://www.minecraft.net/en-us/download/server
+      http_agent: 'Mozilla/5.0 (Windows NT 10.0; WOW64; rv:46.0) Gecko/20100101 Firefox/46.0)'
+      dest: /tmp/server_jar_url.html
+      mode: '0700'
+      owner: minecraft
+      group: minecraft
+    ignore_errors: yes
+    register: download_result    
+  
+  - name: Parse the HTML file for the latest server.jar file URL
+    # Only runs if above download attempt was successful
+    # As of Jan 2022, the latest version of the server.jar is 1.18.1
+    shell: awk -F '"' '/\.jar/ {print $2; exit}' /tmp/server_jar_url.html
+    register: server_jar_url
+    when: download_result.failed == false
+    
+  - name: Download the latest server.jar file to /opt/minecraft
+    get_url:
+      url: "{{ server_jar_url.stdout }}"
+      dest: /opt/minecraft/server.jar
+      mode: '0700'
+      owner: minecraft
+      group: minecraft
+    when: download_result.failed == false
+
+  - name: Download static server.jar to /opt/minecraft if automated download fails
+    #As for Jan 2022 the latest version of the server.jar is 1.18.1
+    get_url:
+      url: https://launcher.mojang.com/v1/objects/125e5adf40c659fd3bce3e66e67a16bb49ecc1b9/server.jar  
+      dest: /opt/minecraft/server.jar
+      mode: '0700'
+      owner: minecraft
+      group: minecraft
+    when: download_result.failed == true
+
+  - name: Clean up /tmp/server_jar_url.html
+    file: 
+      path: /tmp/server_jar_url.html
+      state: absent
+        
+  - name: Check if EULA has already been accepted
+    stat:
+      path: /opt/minecraft/eula.txt
+    register: mc_eula_file
+
+  - name: If EULA has not been accepted, run server.jar
+  # Running server.jar will error out as EULA has not been accepted but will generate all of the necessary files    
+    become: yes
+    become_user: minecraft    
+    command:      
+      chdir: /opt/minecraft/
+      cmd: timeout 60 java -Xmx1024M -Xms1024M -jar server.jar nogui
+    ignore_errors: yes
+    when: mc_eula_file.stat.exists == False
+
+  - name: Update eula.txt to agree to EULA
+    lineinfile:
+      path: /opt/minecraft/eula.txt
+      regexp: '^eula=false'
+      line: 'eula=true'
+      mode: '0700'
+      owner: minecraft
+      group: minecraft
+  
+  - name: Update server.properties to set MOTD
+    lineinfile:
+      path: /opt/minecraft/server.properties
+      regexp: '^motd='
+      line: 'motd={{ minecraft_motd }}'
+      mode: '0700'
+      owner: minecraft
+      group: minecraft
+
+  - name: Update server.properties to set game mode
+    lineinfile:
+      path: /opt/minecraft/server.properties
+      regexp: '^gamemode='
+      line: 'gamemode={{ minecraft_gamemode }}'
+      mode: '0700'
+      owner: minecraft
+      group: minecraft
+
+  - name: Update server.properties to set PVP mode
+    lineinfile:
+      path: /opt/minecraft/server.properties
+      regexp: '^pvp='
+      line: 'pvp={{ minecraft_pvp }}'
+      mode: '0700'
+      owner: minecraft
+      group: minecraft
+
+  - name: Update server.properties to set difficulty
+    lineinfile:
+      path: /opt/minecraft/server.properties
+      regexp: '^difficulty='
+      line: 'difficulty={{ minecraft_difficulty }}'
+      mode: '0700'
+      owner: minecraft
+      group: minecraft
+
+  - name: Update server.properties to enable/disable whitelist
+    lineinfile:
+      path: /opt/minecraft/server.properties
+      regexp: '^white-list='
+      line: 'white-list={{ minecraft_whitelist }}'
+      mode: '0700'
+      owner: minecraft
+      group: minecraft
+
+  - name: Update server.properties to set whitelist enforcement
+    lineinfile:
+      path: /opt/minecraft/server.properties
+      regexp: '^enforce-whitelist='
+      line: 'enforce-whitelist={{ minecraft_enforce_whitelist }}'      
+      mode: '0700'
+      owner: minecraft
+      group: minecraft
+
+  - name: Update server.properties to allow/disallow flight
+    lineinfile:
+      path: /opt/minecraft/server.properties
+      regexp: '^allow-flight='
+      line: 'allow-flight={{ minecraft_allow_flight }}'
+      mode: '0700'
+      owner: minecraft
+      group: minecraft
+
+  - name: Copy over minecraft.service systemd file
+    template:
+      src: minecraft.service
+      dest: /etc/systemd/system/minecraft.service
+      mode: '0755'
+      owner: root
+      group: root
+  
+  - name: Adjust minimum memory value for Minecraft service
+    replace: 
+      path: /etc/systemd/system/minecraft.service
+      regexp: 'Xms4G'
+      replace: 'Xms{{ minecraft_java_minmem }}G'
+      mode: '0755'
+      owner: root
+      group: root
+
+  - name: Adjust maximum memory value for Minecraft service
+    replace: 
+      path: /etc/systemd/system/minecraft.service
+      regexp: 'Xmx10G'
+      replace: 'Xmx{{ minecraft_java_maxmem }}G'
+      mode: '0755'
+      owner: root
+      group: root
+
+  - name: Create /media/backups folder for Minecraft world backups
+    # Recommend if you have a CIFS/NFS network share to mount here via /etc/fstab  
+    # Frequent world backups can take up a lot of space!    
+    file:
+      path: /media/backups
+      state: directory
+      mode: '0700'
+      owner: minecraft
+      group: minecraft
+
+  - name: Copy backup script to /opt/minecraft
+    copy:
+      src: mc-backup.sh
+      dest: /opt/minecraft/mc-backup.sh
+      mode: '0500'
+      owner: minecraft
+      group: minecraft
+
+  - name: Create cron job to run backup every 4 hours
+    cron:
+        name: "Minecraft Backup"
+        minute: "0"
+        hour: "*/4"
+        state: present
+        user: minecraft
+        job: /opt/minecraft/mc-backup.sh
+
+  - name: Create cron job to run alongside backup and purge archives older than 2 weeks
+    cron:
+      name: "Purge Old Minecraft Backups"
+      minute: "0"
+      hour: "*/4"
+      state: present
+      user: minecraft
+      job: find /media/backups/*.tar.gz -mtime +13 -type f -delete
+
+  - name: Start and enable Minecraft service
+    systemd:
+      state: started
+      enabled: yes
+      daemon_reload: yes
+      name: minecraft    
+  
+  - name: Wait for Minecraft service to start up completely before continuing
+    # Wait for "Time elapsed" to show up in the latest.log file indicating the spawn area has completed
+    # Note that with frequent restarts this may already be in the log, so 60 second delay added as well
+    wait_for: 
+      path: /opt/minecraft/logs/latest.log
+      search_regex: Time elapsed
+      delay: 60
+
+  - name: OP the Minecraft user
+    become: yes
+    become_user: minecraft    
+    command:
+      chdir: /opt/minecraft/ 
+      cmd: screen -p 0 -S mcs -X stuff '/op {{ minecraft_user }}\n'     
+    ignore_errors: yes
+    when: minecraft_user != ""
+
+  - name: Whitelist the Minecraft user
+    become: yes
+    become_user: minecraft        
+    command:
+      chdir: /opt/minecraft/ 
+      cmd: screen -p 0 -S mcs -X stuff '/whitelist add {{ minecraft_user }}\n'     
+    ignore_errors: yes
+    when: minecraft_user != ""
