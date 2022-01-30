@@ -90,3 +90,9 @@ If you are using SSH key based authentication, then you should just need to run:
 ``` ansible-playbook -i ./inventory buildminecraft.yml ```
 
 If you are using username and password based authentication, you will be prompted for the user password, and the root password.
+
+&nbsp;
+
+## References
+
+* [chadgeary minecraft Github](https://github.com/chadgeary/minecraft) - Used as a good starting point, and had some interesting ideas for parsing the Mojang server.jar download page.
