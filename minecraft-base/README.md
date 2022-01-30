@@ -2,6 +2,8 @@
 
 This project is designed to completely automate the installation of Minecraft Java Edition Server on a Linux machine.
 
+&nbsp;
+
 ## Introduction
 
 This project is a continuation to automate creating a Minecraft server on VMware vSphere using Packer, Terraform, and Ansible.  Reference Links:
@@ -10,6 +12,8 @@ This project is a continuation to automate creating a Minecraft server on VMware
 * [Terraform Code](https://github.com/linuxtek-canada/Terraform/tree/master/vmware-base)
 
 From testing, the Ansible Playbook can also be used to spin up Minecraft on AWS and GCP instances, OS depending.
+
+&nbsp;
 
 ## Testing
 
@@ -27,6 +31,8 @@ The script is designed to be as distribution agnostic as possible, but not all u
 * Debian 10 - older package requirements throw errors, such as package issues
 * RHEL 8 - [screen has been deprecated](https://access.redhat.com/solutions/4136481#:~:text=The%20screen%20utility%20was%20marked,guide%20to%20help%20users%20switch), would need to switch to using tmux or rcon to send Minecraft console commands.
     
+&nbsp;
+
 ## Usage
 
 1.  Clone this repo.
@@ -43,6 +49,8 @@ In the directory where you want to clone the files, run:
 
 ``` git clone git@github.com:linuxtek-canada/Ansible.git ```
 
+&nbsp;
+
 2.  Configure the ```ansible.cfg``` file.
 
 Once the repo has been cloned locally, edit the ansible.cfg file.  
@@ -57,6 +65,8 @@ ask_sudo_pass= true
 become_ask_pass = true
 ```
 
+&nbsp;
+
 3.  Configure the inventory file.
 
 This project uses a local ```inventory``` file, however Ansible can easily be set up to use a global one. [For reference](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html)
@@ -65,10 +75,14 @@ For a simple inventory file, all that needs to be entered is the IP address of t
 
 If multiple servers will be used, they can be broken down into groups, or a YAML based file can be created.
 
+&nbsp;
+
 4.  Ensure you have the latest version of Ansible installed locally
 
 This script requires **Ansible 2.9.8 or later**, to avoid this error:  ["Malformed output discovered from systemd list-unit-files"](https://giters.com/ansible/ansible/issues/74717)
  
+&nbsp;
+
 5.  Run the Ansible Playbook
 
 If you are using SSH key based authentication, then you should just need to run:
