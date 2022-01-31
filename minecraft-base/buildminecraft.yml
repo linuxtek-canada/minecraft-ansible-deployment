@@ -29,7 +29,7 @@
 
     # Minimum and maximum amount of memory to allow Java to run Minecraft in GB
     minecraft_java_minmem: 2
-    minecraft_java_maxmem: 10
+    minecraft_java_maxmem: 4
 
   tasks:     
   
@@ -86,7 +86,7 @@
       state: latest
     when: ansible_facts['distribution'] == "RedHat" or ansible_facts['distribution'] == "CentOS" or ansible_facts['distribution'] == "Fedora"
 
-  - name: Download and install Amazon Coretto 17 if running on Amazon Linux 2
+  - name: Download and install Amazon Corretto 17 if running on Amazon Linux 2
     # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/yum_module.html
     # https://docs.aws.amazon.com/corretto/latest/corretto-17-ug/Corretto-17.pdf
     yum: 
