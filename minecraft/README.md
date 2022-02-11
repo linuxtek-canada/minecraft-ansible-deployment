@@ -8,9 +8,9 @@ This project is designed to completely automate the installation of Minecraft Ja
 
 Related Blog Posts: 
 
-[Build A Fully Functional Minecraft Server In Less Than 10 Minutes With Ansible](https://minecraftadmin.linuxtek.ca/2022/01/30/build-a-fully-functional-minecraft-server-in-less-than-10-minutes-with-ansible/)
+* [Build A Fully Functional Minecraft Server In Less Than 10 Minutes With Ansible](https://minecraftadmin.linuxtek.ca/2022/01/30/build-a-fully-functional-minecraft-server-in-less-than-10-minutes-with-ansible/)
 
-[Code Refactor - Building a Minecraft Server with Ansible]()
+* [Code Refactor - Building a Minecraft Server with Ansible]()
 
 Code Reference Links:
 
@@ -37,6 +37,8 @@ From testing, the Ansible Playbook can also be used to spin up Minecraft on AWS 
 * Debian 10 - older package requirements throw errors, such as package issues
 * RHEL 8 - Service issues with systemd and tmux
     
+&nbsp;
+
 **The script was tested to work for Valhelsia Enhanced Vanilla Minecraft on:**
 
 * VMware vSphere - Debian 11 'Bullseye'
@@ -50,10 +52,14 @@ The Ansible Playbooks are designed for installing on a new server.  There is som
 
 Before running the script, be sure to back up any Minecraft world or configuration files.
 
+&nbsp;
+
 ## Prerequisites
 
 Ensure you have the latest version of Ansible installed locally where you plan to run the Playbook.  
 This script requires **Ansible 2.9.8 or later**, to avoid this error:  ["Malformed output discovered from systemd list-unit-files"](https://giters.com/ansible/ansible/issues/74717)
+
+&nbsp;
 
 ## Usage
 
@@ -106,6 +112,8 @@ There are a number of variables that have defaults set but can be adjusted:
 ```\roles\common\defaults\main.yml`` has most of the defaults, especially when creating a Vanilla Minecraft server.
 
 ```\roles\valhelsiaminecraft\defaults\main.yml``` may need to be adjusted with the URL to the latest version of Valhelsia Enhanced Vanilla.
+
+&nbsp;
 
 5.  Run the Ansible Playbook
 
