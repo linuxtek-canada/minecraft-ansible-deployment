@@ -1,0 +1,45 @@
+---
+  - name: Attempt Download Server HTML file from Minecraft.net
+    # Needed to modify user agent as Mojang restricts URL download otherwise
+    # https://bugs.mojang.com/browse/WEB-4753
+    # Testing failed on AWS but works locally.  Will include backup static download scenario
+    get_url: 
+      url: https://www.minecraft.net/en-us/download/server
+      http_agent: 'user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)'
+      dest: /tmp/server_jar_url.html
+      mode: '0700'
+      owner: minecraft
+      group: minecraft
+    ignore_errors: yes
+    register: download_result    
+  
+  - name: Parse the HTML file for the latest server.jar file URL
+    # Only runs if above download attempt was successful
+    # As of Jan 2022, the latest version of the server.jar is 1.18.1
+    shell: awk -F '"' '/\.jar/ {print $2; exit}' /tmp/server_jar_url.html
+    register: server_jar_url
+    when: download_result.failed == false
+    
+  - name: Download the latest server.jar file to /opt/minecraft
+    get_url:
+      url: "{{ server_jar_url.stdout }}"
+      dest: /opt/minecraft/server.jar
+      mode: '0700'
+      owner: minecraft
+      group: minecraft
+    when: download_result.failed == false
+
+  - name: Download static server.jar to /opt/minecraft if automated download fails
+    #As for Jan 2022 the latest version of the server.jar is 1.18.1
+    get_url:
+      url: "{{ server_jar }}"
+      dest: /opt/minecraft/server.jar
+      mode: '0700'
+      owner: minecraft
+      group: minecraft
+    when: download_result.failed == true
+
+  - name: Clean up /tmp/server_jar_url.html
+    file: 
+      path: /tmp/server_jar_url.html
+      state: absent

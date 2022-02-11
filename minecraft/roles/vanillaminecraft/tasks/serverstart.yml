@@ -1,0 +1,32 @@
+---
+
+  - name: Use variables to generate and upload server.properties file
+    template: 
+      src: templates/server.properties.j2
+      dest: /opt/minecraft/server.properties
+      mode: '0644'
+      owner: minecraft
+      group: minecraft
+
+  - name: Use variables to generate and upload minecraft.service systemd file
+    template:
+      src: templates/minecraft.service.j2
+      dest: /etc/systemd/system/minecraft.service
+      mode: '0644'
+      owner: root
+      group: root
+  
+  - name: Start and enable Minecraft service
+    systemd:
+      state: started
+      enabled: yes
+      daemon_reload: yes
+      name: minecraft    
+
+  - name: Wait for Minecraft service to start up completely before continuing
+    # Wait for "Time elapsed" to show up in the latest.log file indicating the spawn area has completed
+    # Note that with frequent restarts this may already be in the log, so 60 second delay added as well
+    wait_for: 
+      path: /opt/minecraft/logs/latest.log
+      search_regex: Time elapsed
+      delay: 60

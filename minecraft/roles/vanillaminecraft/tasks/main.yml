@@ -1,0 +1,4 @@
+---
+- include_tasks: download.yml
+- include_tasks: eula.yml
+- include_tasks: serverstart.yml

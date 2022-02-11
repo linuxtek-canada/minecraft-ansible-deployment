@@ -4,15 +4,15 @@ MINECRAFTSTATUS=`systemctl is-active minecraft`
 
 if [ $MINECRAFTSTATUS == "active" ]
 then
-	screen -p 0 -S mcs -X stuff '/say "Server Backup In Progress"\n'
-	screen -p 0 -S mcs -X stuff '/save-all flush\n'
-	screen -p 0 -S mcs -X stuff '/save-off\n'
+	/usr/bin/tmux send-keys -t mcs.0 '/say "Server Backup In Progress"' ENTER
+	/usr/bin/tmux send-keys -t mcs.0 '/save-all flush' ENTER
+	/usr/bin/tmux send-keys -t mcs.0 '/save-off' ENTER
 	sleep 30
 	tar -zcvf /opt/minecraft/$FILENAME /opt/minecraft/world
 	mv /opt/minecraft/$FILENAME /media/backups/
-	screen -p 0 -S mcs -X stuff '/save-on\n'
+	/usr/bin/tmux send-keys -t mcs.0 '/save-on' ENTER
 	sleep 10
-	screen -p 0 -S mcs -X stuff '/say "Server Backup Complete"\n'
+	/usr/bin/tmux send-keys -t mcs.0 '/say "Server Backup Complete"' ENTER
 else
 	echo "Minecraft Service is not running"
 fi

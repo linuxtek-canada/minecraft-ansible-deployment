@@ -1,0 +1,34 @@
+---
+# This section has variables to be filled out by user to be used during execution.
+# Review Minecraft Wiki for server.properties settings:
+# https://minecraft.fandom.com/wiki/Server.properties       
+    
+minecraft_motd: "Ansible created Minecraft Server"
+minecraft_gamemode: "survival"
+minecraft_pvp: "false"
+minecraft_max_players: "10"
+minecraft_difficulty: "normal"
+minecraft_server_port: "25565"
+
+#For a modded Valhelsia server, this should always be set true.
+minecraft_allow_flight: "true"
+
+# If Minecraft server will be internet facing, recommend enabling this
+# Whitelist can be managed through whitelist.json or console in game
+# Script will attempt to whitelist and op the specified user below.
+# https://minecraft.fandom.com/wiki/Commands/whitelist
+minecraft_whitelist: "true"
+minecraft_enforce_whitelist: "true"
+
+# Minimum and maximum amount of memory in GB to allow Java to run Minecraft
+# Note that for a modded server you will need significantly more memory - 8GB recommended
+minecraft_java_minmem: 4
+minecraft_java_maxmem: 8
+
+# Minecraft user to OP and whitelist by username.
+# Otherwise you will be blocked from joining the server.
+minecraft_user: ""
+
+# Static URL for Vanilla Minecraft server.jar if automated/latest download fails.  Latest is 1.18.1:
+# To get the link, visit this page and copy the JAR download link address:  https://www.minecraft.net/en-us/download/server
+server_jar: "https://launcher.mojang.com/v1/objects/125e5adf40c659fd3bce3e66e67a16bb49ecc1b9/server.jar"

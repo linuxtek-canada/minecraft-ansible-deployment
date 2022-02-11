@@ -1,0 +1,25 @@
+---
+
+- name: Download and Extract Valhelsia Enhanced Vanilla Server Pack
+  unarchive:
+    src: "{{ valhelsia_download_link }}"
+    dest: /opt/minecraft
+    remote_src: yes
+    group: minecraft
+    owner: minecraft
+    
+- name: Remove the zip file once extracted
+  file: 
+    path: /opt/minecraft/{{ valhelsia_zip_file }}
+    state: absent
+
+- name: Adjust startup script for max memory usage
+  lineinfile:
+    path: /opt/minecraft/ServerStart.sh
+    regexp: '^ALLOCATED_RAM'
+    line: ALLOCATED_RAM="{{ minecraft_java_maxmem }}G"
+
+- name: Install python3-pexpect required for answering prompts
+  apt:
+   name: python3-pexpect      
+   state: latest

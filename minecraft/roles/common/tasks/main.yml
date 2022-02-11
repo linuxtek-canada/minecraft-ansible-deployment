@@ -1,0 +1,76 @@
+---
+
+  - name: Get list of services    
+    # This needs Ansible 2.9.8 or later - ensure you are updated locally or you will run into an error here:
+    # Malformed output discovered from systemd list-unit-files
+    # Reference:  https://giters.com/ansible/ansible/issues/74717 
+    service_facts:      
+    
+  - name: Stop Minecraft service if it exists
+    systemd: 
+      name: minecraft
+      state: stopped
+    when: ansible_facts.services["minecraft.service"] is defined
+   
+  - name: If APT based system, refresh packages with apt
+    apt:
+      update_cache: yes
+      name: "*"
+      state: latest
+    when: ansible_os_family == "Debian"
+
+  - name: If RPM based system, refresh packages with yum
+    yum:
+      update_cache: yes
+      name: '*'
+      state: latest
+    when: ansible_os_family == "RedHat"
+    
+  - name: Install required packages
+    # Should be agnostic to package manager (apt, yum) however package names may differ based on distribution    
+    # Screen required to create and access Minecraft admin console.  Can look at switching this to tmux or rcon
+    # ACL package required to avoid this error:  "Failed to set permissions on the temporary files Ansible needs to create when becoming an unprivileged user"
+    # https://github.com/georchestra/ansible/issues/55#issuecomment-588313638
+    package:
+      name:               
+      - tmux
+      - vim      
+      - acl
+      - wget
+      - curl
+      - unzip
+      - tar
+      - htop      
+      state: latest
+    ignore_errors: yes    
+
+    # As of January 2022, the latest version of Java is 17.0.2.
+    # Specifying openjdk-17 but this can be updated as needed to ensure latest Java version installed
+
+  - name: If Ubuntu, add OpenJDK repository from PPA
+    # Ubuntu 20.04 needs the ppa:openjdk-r/ppa repository to be able to install OpenJDK 17
+    # https://www.linuxcapable.com/how-to-install-openjdk-17-on-ubuntu-20-04/
+    apt_repository: 
+      repo: ppa:openjdk-r/ppa
+    when: ansible_facts['distribution'] == "Ubuntu"
+
+  - name: Install OpenJDK 17 if running on APT based system (eg - Debian, Ubuntu)    
+    # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html
+    apt: 
+      name: openjdk-17-jre-headless
+      state: latest
+    when: ansible_os_family == "Debian"
+
+  - name: Install OpenJDK 17 if running on RPM based system (eg - RHEL, CentOS, Fedora)
+    yum:
+      name: java-17-openjdk-headless.x86_64
+      state: latest
+    when: ansible_facts['distribution'] in ('RedHat','CentOS','Fedora')
+
+  - name: Download and install Amazon Corretto 17 if running on Amazon Linux 2
+    # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/yum_module.html
+    # https://docs.aws.amazon.com/corretto/latest/corretto-17-ug/Corretto-17.pdf
+    yum: 
+      name: java-17-amazon-corretto-headless.x86_64
+      state: latest
+    when: ansible_facts['distribution'] == "Amazon"

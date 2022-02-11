@@ -1,0 +1,4 @@
+# Default Inventory File
+# https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html
+
+# Add IP addresses for target servers below:

@@ -1,0 +1,9 @@
+---
+
+# Valhelsia Enhanced Vanilla Server Setup Guide:  https://wiki.valhelsia.net/navigation/knowledgebase/server-setup
+# Valhelsia Enhanced Vanilla Client Installation Guide:  https://wiki.valhelsia.net/navigation/knowledgebase/installation
+# Valhelsia Enhanced Vanilla Client Getting Started Guide:  https://wiki.valhelsia.net/modpacks/valhelsia-enhanced-vanilla/getting-started-guide
+
+- include_tasks: download.yml
+- include_tasks: eula.yml
+- include_tasks: serverstart.yml

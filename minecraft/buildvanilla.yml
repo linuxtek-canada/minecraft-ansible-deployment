@@ -1,0 +1,26 @@
+---
+
+- name: Install or update Minecraft Server
+
+  become: yes
+  become_method: sudo
+  become_user: root    
+
+  hosts : all
+
+  pre_tasks:
+    - name: Set up user and directories
+      include_tasks: tasks/preinstall.yml
+
+  roles: 
+    - common
+    - vanillaminecraft
+  
+  post_tasks: 
+    - name: Console into Minecraft and update whitelist and OP
+      include_tasks: tasks/postinstall.yml
+ 
+        
+ 
+
+  

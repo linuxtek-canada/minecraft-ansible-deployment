@@ -1,0 +1,61 @@
+---
+
+  - name: Use variables to generate and upload server.properties file
+    template: 
+      src: templates/server.properties.j2
+      dest: /opt/minecraft/server.properties
+      mode: '0644'
+      owner: minecraft
+      group: minecraft
+
+  - name: Use variables to generate and upload minecraft.service systemd file
+    template:
+      src: templates/minecraft.service.j2
+      dest: /etc/systemd/system/minecraft.service
+      mode: '0644'
+      owner: root
+      group: root
+  
+  - name: Modify the minecraft.service ExecStart to run the Shell script inside of tmux, instead of the default method
+    lineinfile:
+      path: /etc/systemd/system/minecraft.service
+      regexp: '^ExecStart'
+      line: ExecStart=/usr/bin/tmux new-session -d -s mcs 'bash /opt/minecraft/ServerStart.sh'
+      owner: root
+      group: root
+
+  - name: Make sure all files in /opt/minecraft are owned by minecraft user
+    file:
+      path: /opt/minecraft
+      state: directory
+      recurse: yes
+      owner: minecraft
+      group: minecraft
+   
+  - name: Remove world directory to recreate and change settings
+    file: 
+      path: /opt/minecraft/world
+      state: absent
+
+  - name: Recreate world directory
+    file:
+      path: /opt/minecraft/world
+      state: directory
+      mode: '0700'
+      owner: minecraft
+      group: minecraft
+
+  - name: Start and enable Minecraft service
+    systemd:
+      state: started
+      enabled: yes
+      daemon_reload: yes
+      name: minecraft    
+  
+  - name: Wait for Minecraft service to start up completely before continuing
+    # Wait for "Time elapsed" to show up in the latest.log file indicating the spawn area has completed
+    # Note that with frequent restarts this may already be in the log, so 60 second delay added as well
+    wait_for: 
+      path: /opt/minecraft/logs/latest.log
+      search_regex: Time elapsed
+      delay: 60

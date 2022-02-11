@@ -1,0 +1,14 @@
+---
+
+# Variables to be used when installing a Valhelsia Enhanced Vanilla Minecraft Server
+
+# Valhelsia Server Binary Download
+# Update as needed.  As of February 2022, the latest version is 1.07 with Minecraft 1.18.1
+# To update the URL, you may need to go to CurseForge and download the pack, then check the download link used in Chrome
+# Details:  https://www.reddit.com/r/feedthebeast/comments/fffna3/wget_mod_from_curseforge/
+
+valhelsia_download_link: https://media.forgecdn.net/files/3634/447/Valhelsia+Enhanced+Vanilla-1.0.7-SERVER.zip
+
+# Enter the filename here so it can be cleaned up afterwards:
+valhelsia_zip_file: "Valhelsia+Enhanced+Vanilla-1.0.7-SERVER.zip"
+

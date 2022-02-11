@@ -1,0 +1,75 @@
+---
+
+- name: Set up Minecraft group
+  group:
+    name: minecraft
+    state: present
+
+- name: Ensure a wheel group is created
+  group: 
+    name: wheel
+    state: present
+
+- name: Set up Minecraft user
+  user:
+    name: minecraft        
+    shell: /bin/bash
+    groups: minecraft, wheel
+    home: /home/minecraft    
+
+- name: Allow wheel group to have passwordless sudo
+  lineinfile:
+    dest: /etc/sudoers
+    state: present
+    regexp: '^%wheel'
+    line: '%wheel ALL=(ALL) NOPASSWD: ALL'
+
+
+- name: Clear /opt/minecraft directory for fresh install
+  file: 
+    path: /opt/minecraft
+    state: absent
+  
+- name: Create /opt/minecraft directory and give ownership to Minecraft user
+  file:
+    path: /opt/minecraft
+    state: directory
+    mode: '0700'
+    owner: minecraft
+    group: minecraft
+
+- name: Create /media/backups folder for Minecraft world backups
+  # Recommend if you have a CIFS/NFS network share to mount here via /etc/fstab  
+  # Frequent world backups can take up a lot of space!    
+  file:
+    path: /media/backups
+    state: directory
+    mode: '0700'
+    owner: minecraft
+    group: minecraft
+
+- name: Copy backup script to /opt/minecraft
+  copy:
+    src: scripts/mc-backup.sh
+    dest: /opt/minecraft/mc-backup.sh
+    mode: '0500'
+    owner: minecraft
+    group: minecraft
+
+- name: Create cron job to run backup every 4 hours
+  cron:
+    name: "Minecraft Backup"
+    minute: "0"
+    hour: "*/4"
+    state: present
+    user: minecraft
+    job: /opt/minecraft/mc-backup.sh
+
+- name: Create cron job to run alongside backup and purge archives older than 2 weeks
+  cron:
+    name: "Purge Old Minecraft Backups"
+    minute: "0"
+    hour: "*/4"
+    state: present
+    user: minecraft
+    job: find /media/backups/*.tar.gz -mtime +13 -type f -delete

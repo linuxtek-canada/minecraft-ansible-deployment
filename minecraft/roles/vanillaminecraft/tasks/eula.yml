@@ -1,0 +1,25 @@
+---
+
+  - name: Check if EULA has already been accepted
+    stat:
+      path: /opt/minecraft/eula.txt
+    register: mc_eula_file
+
+  - name: If EULA has not been accepted, run server.jar
+  # Running server.jar will error out as EULA has not been accepted but will generate all of the necessary files    
+    become: yes
+    become_user: minecraft    
+    command:      
+      chdir: /opt/minecraft/
+      cmd: timeout 60 java -Xmx1024M -Xms1024M -jar server.jar nogui
+    ignore_errors: yes
+    when: mc_eula_file.stat.exists == False
+
+  - name: Update eula.txt to agree to EULA
+    lineinfile:
+      path: /opt/minecraft/eula.txt
+      regexp: '^eula=false'
+      line: 'eula=true'
+      mode: '0700'
+      owner: minecraft
+      group: minecraft

@@ -1,0 +1,34 @@
+---
+
+- name: Set the ServerStart.sh file to be executable
+  file:
+    path: /opt/minecraft/ServerStart.sh
+    owner: minecraft
+    group: minecraft
+    mode: '0755'
+
+- name: Create the eula.txt file 
+  copy: 
+    content: 'eula=true'
+    dest: /opt/minecraft/eula.txt
+
+- name: Launch ServerStart.sh to download and generate files  
+  become: yes
+  become_user: minecraft  
+  command: 
+    chdir: /opt/minecraft
+    cmd: /usr/bin/tmux new-session -d -s mcs 'bash /opt/minecraft/ServerStart.sh'  
+
+- name: Wait for Minecraft service to start up completely before continuing
+    # Wait for "Server performance level" to show up in the latest.log file indicating the spawn area has completed    
+  wait_for: 
+    path: /opt/minecraft/logs/latest.log
+    search_regex: Server performance level
+    delay: 60
+
+- name: Kill the tmux session
+  become: yes
+  become_user: minecraft
+  command: /usr/bin/tmux kill-session -t mcs
+    
+  
