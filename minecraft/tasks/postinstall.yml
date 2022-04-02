@@ -1,5 +1,31 @@
 ---
 
+- name: If existing config files are present in /tmp copy them to /opt/minecraft
+  copy:
+    src: /tmp/{{ item }}
+    dest: /opt/minecraft
+    remote_src: yes
+    force: yes
+  with_items:
+    - ops.json
+    - whitelist.json
+    - banned-ips.json
+    - banned-players.json      
+    - server.properties
+  ignore_errors: yes 
+
+- name: Remove file backups from /tmp
+  file:
+    path: /tmp/{{ item }}
+    state: absent
+  with_items:
+    - ops.json
+    - whitelist.json
+    - banned-ips.json
+    - banned-players.json      
+    - server.properties
+  ignore_errors: yes 
+
 - name: OP the Minecraft user
   become: yes
   become_user: minecraft    
@@ -17,10 +43,3 @@
     cmd: /usr/bin/tmux send-keys -t mcs '/whitelist add {{ minecraft_user }}' ENTER
   ignore_errors: yes
   when: minecraft_user != ""
-
-- name: Run Chunky Pregenerator to pre-generate 5000 blocks
-  become: yes
-  become_user: minecraft        
-  command:
-    chdir: /opt/minecraft/ 
-    cmd: /usr/bin/tmux send-keys -t mcs '/chunky radius 5000' ENTER '/chunky start' ENTER

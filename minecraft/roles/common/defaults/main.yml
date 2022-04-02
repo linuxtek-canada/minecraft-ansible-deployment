@@ -3,12 +3,12 @@
 # Review Minecraft Wiki for server.properties settings:
 # https://minecraft.fandom.com/wiki/Server.properties       
     
-minecraft_motd: "Ansible created Minecraft Server"
+minecraft_motd: "Valhelsia Enhanced Vanilla"
 minecraft_gamemode: "survival"
 minecraft_pvp: "false"
-minecraft_max_players: "10"
+minecraft_max_players: "20"
 minecraft_difficulty: "normal"
-minecraft_server_port: "25565"
+minecraft_server_port: "8001"
 
 #For a modded Valhelsia server, this should always be set true.
 minecraft_allow_flight: "true"
@@ -27,7 +27,7 @@ minecraft_java_maxmem: 8
 
 # Minecraft user to OP and whitelist by username.
 # Otherwise you will be blocked from joining the server.
-minecraft_user: ""
+minecraft_user: "TheOneBlackMage"
 
 # Static URL for Vanilla Minecraft server.jar if automated/latest download fails.  Latest is 1.18.1:
 # To get the link, visit this page and copy the JAR download link address:  https://www.minecraft.net/en-us/download/server

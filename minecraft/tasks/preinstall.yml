@@ -1,5 +1,18 @@
 ---
 
+- name: Copy existing config files to /tmp
+  copy:
+    src: /opt/minecraft/{{ item }}
+    dest: /tmp
+    remote_src: yes
+  with_items:
+    - ops.json
+    - whitelist.json
+    - banned-ips.json
+    - banned-players.json      
+    - server.properties
+  ignore_errors: yes 
+
 - name: Set up Minecraft group
   group:
     name: minecraft

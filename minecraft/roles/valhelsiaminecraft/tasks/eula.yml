@@ -7,6 +7,12 @@
     group: minecraft
     mode: '0755'
 
+- name: Remove the "Press Enter to Continue" line from ServerStart.sh so any crashes/restart don't wait on user input
+  lineinfile:
+    path: /opt/minecraft/ServerStart.sh
+    search_string: 'Press enter to continue'
+    state: absent
+    
 - name: Create the eula.txt file 
   copy: 
     content: 'eula=true'

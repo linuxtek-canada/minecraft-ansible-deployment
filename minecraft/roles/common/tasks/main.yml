@@ -28,7 +28,7 @@
     
   - name: Install required packages
     # Should be agnostic to package manager (apt, yum) however package names may differ based on distribution    
-    # Screen required to create and access Minecraft admin console.  Can look at switching this to tmux or rcon
+    # Tmux required to create and access Minecraft admin console.
     # ACL package required to avoid this error:  "Failed to set permissions on the temporary files Ansible needs to create when becoming an unprivileged user"
     # https://github.com/georchestra/ansible/issues/55#issuecomment-588313638
     package:
@@ -40,7 +40,10 @@
       - curl
       - unzip
       - tar
-      - htop      
+      - htop
+      - smbclient
+      - cifs-utils
+            
       state: latest
     ignore_errors: yes    
 

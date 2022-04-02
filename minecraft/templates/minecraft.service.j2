@@ -11,6 +11,8 @@ Type=forking
 WorkingDirectory=/opt/minecraft
 TimeoutStopSec=120
 KillSignal=SIGCONT
+Restart=on-failure
+RestartSec=5s
 
 ExecStart=/usr/bin/tmux new -d -s mcs '/usr/bin/java -Xms{{ minecraft_java_minmem }}G -Xmx{{ minecraft_java_maxmem }}G -XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200 -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:G1NewSizePercent=30 -XX:G1MaxNewSizePercent=40 -XX:G1HeapRegionSize=8M -XX:G1ReservePercent=20 -XX:G1HeapWastePercent=5 -XX:G1MixedGCCountTarget=4 -XX:InitiatingHeapOccupancyPercent=15 -XX:G1MixedGCLiveThresholdPercent=90 -XX:G1RSetUpdatingPauseTimePercent=5 -XX:SurvivorRatio=32 -XX:+PerfDisableSharedMem -XX:MaxTenuringThreshold=1 -server -jar server.jar nogui'
 
@@ -22,7 +24,8 @@ ExecStop=/usr/bin/tmux send-keys -t mcs.0 '/say "SERVER SHUTTING DOWN IN 5 SECON
 ExecStop=/usr/bin/sleep 5
 ExecStop=/usr/bin/tmux send-keys -t mcs.0 '/save-all flush' ENTER
 ExecStop=/usr/bin/tmux send-keys -t mcs.0 '/stop' ENTER
-ExecStop=/usr/bin/sleep 20
+ExecStop=/usr/bin/sleep 60
+ExecStop=/usr/bin/tmux kill-session -t mcs
 
 [Install]
 WantedBy=multi-user.target

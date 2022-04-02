@@ -7,8 +7,7 @@
 # To update the URL, you may need to go to CurseForge and download the pack, then check the download link used in Chrome
 # Details:  https://www.reddit.com/r/feedthebeast/comments/fffna3/wget_mod_from_curseforge/
 
-valhelsia_download_link: https://media.forgecdn.net/files/3634/447/Valhelsia+Enhanced+Vanilla-1.0.7-SERVER.zip
+valhelsia_download_link: https://media.forgecdn.net/files/3723/369/Valhelsia+Enhanced+Vanilla-1.1.2-SERVER.zip
 
 # Enter the filename here so it can be cleaned up afterwards:
-valhelsia_zip_file: "Valhelsia+Enhanced+Vanilla-1.0.7-SERVER.zip"
-
+valhelsia_zip_file: "Valhelsia+Enhanced+Vanilla-1.1.2-SERVER.zip"
