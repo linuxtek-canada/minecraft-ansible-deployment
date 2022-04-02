@@ -109,7 +109,7 @@ If multiple servers will be executed against, they can be broken down into group
 
 There are a number of variables that have defaults set but can be adjusted:
 
-```\roles\common\defaults\main.yml`` has most of the defaults, especially when creating a Vanilla Minecraft server.
+```\roles\common\defaults\main.yml``` has most of the defaults, especially when creating a Vanilla Minecraft server.
 
 ```\roles\valhelsiaminecraft\defaults\main.yml``` may need to be adjusted with the URL to the latest version of Valhelsia Enhanced Vanilla.
 
@@ -137,7 +137,7 @@ If you are using username and password based authentication as configured in ```
 
 * Ensure you have storage for world backups.  The automated backup script will back up the world files every 4 hours, which can add up to a lot.  An automated job will clean out old backups after 2 weeks, but as the world is explored more, the amount of space each backup takes up will grow.
 
-* If you are setting up a Valhelsia Enhanced Vanilla Server, it is set to pre-generate 5000 chunks around spawn.  This can take a day or so to complete, and performance may be impacted while generating is processing.
+* If you are setting up a Valhelsia Enhanced Vanilla Server, You can use the Chunky Generator to pre-generate chunks.  See the [Valhelsia Server Installation Guide](https://wiki.valhelsia.net/navigation/knowledgebase/server-setup) for the commands to set this up.
 
 * If you are running the server at home, ensure you open or forward ports on your firewall to allow players to connect.  TCP Port 25565 should be all that is needed, but in some instances you may need to open UDP 19132-19133 and 25565 as well.
 
