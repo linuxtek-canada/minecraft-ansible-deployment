@@ -5,6 +5,7 @@
     src: /opt/minecraft/{{ item }}
     dest: /tmp
     remote_src: yes
+    force: yes
   with_items:
     - ops.json
     - whitelist.json

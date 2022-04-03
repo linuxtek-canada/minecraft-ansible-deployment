@@ -8,7 +8,7 @@ then
 	/usr/bin/tmux send-keys -t mcs.0 '/save-all flush' ENTER
 	/usr/bin/tmux send-keys -t mcs.0 '/save-off' ENTER
 	sleep 30
-	tar -zcvf /opt/minecraft/$FILENAME /opt/minecraft/world
+	tar -zcvf /opt/minecraft/$FILENAME /opt/minecraft
 	mv /opt/minecraft/$FILENAME /media/backups/
 	/usr/bin/tmux send-keys -t mcs.0 '/save-on' ENTER
 	sleep 10
