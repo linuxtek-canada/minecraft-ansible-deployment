@@ -36,5 +36,6 @@
   when: minecraft_user != ""
   with_items:
     - /usr/bin/tmux send-keys -t mcs '/reload' ENTER
+    - /usr/bin/tmux send-keys -t mcs '/whitelist reload' ENTER
     - /usr/bin/tmux send-keys -t mcs '/op {{ minecraft_user }}' ENTER
     - /usr/bin/tmux send-keys -t mcs '/whitelist add {{ minecraft_user }}' ENTER
